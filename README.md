@@ -1,5 +1,7 @@
 # 코피 주문기 · Kopi Order
 
+**\*한국어** · [English](README.en.md)\*
+
 싱가포르 호커센터에서 커피 시키는 법을 버튼으로 배우는 앱입니다.
 `Kopi C Siu Dai Peng` 같은 주문 문장이 어떻게 조립되는지, 그 문장이 잔 안에서 무슨 뜻인지 보여줍니다.
 
@@ -73,13 +75,12 @@ Cloudflare Workers에 정적 자산으로 올립니다. 정적 파일 요청은 
 
 ```bash
 npm run login      # 브라우저가 열리고 로그인. 토큰 복사 안 해도 됩니다
-npm run deploy     # 30초쯤 뒤 https://kopi-order.<subdomain>.workers.dev
+npm run deploy     # 30초쯤 뒤 https://kopi-order.kopi-order-sg.workers.dev
 ```
 
-배포 후 할 일 두 가지:
+배포 후 할 일:
 
-1. `public/index.html`과 이 README의 `REPLACE-ME`를 실제 주소로 바꾸세요. 링크 공유할 때 미리보기 이미지가 그 주소를 봅니다
-2. Cloudflare 대시보드 → Workers & Pages → kopi-order → Settings → Builds 에서 이 저장소를 연결하면, 이후로는 push가 곧 배포입니다
+- Cloudflare 대시보드 → Workers & Pages → kopi-order → Settings → Builds 에서 이 저장소를 연결하면, 이후로는 push가 곧 배포입니다
 
 커스텀 도메인은 같은 화면의 Domains & Routes 에서 붙일 수 있어요.
 
