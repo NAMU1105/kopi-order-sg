@@ -1,0 +1,2292 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>코피 주문기 — 싱가포르 호커센터 커피 주문법</title>
+    <meta
+      name="description"
+      content="싱가포르 커피는 이름이 곧 레시피입니다. 눌러서 주문 문장을 조립해보세요."
+    />
+    <meta name="theme-color" content="#0b0710" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0710'/%3E%3Cg fill='%23170d20' stroke='%23f6ecdf' stroke-width='3' stroke-linejoin='round'%3E%3Cpath d='M17 24 L19 10 L30 19 Z'/%3E%3Cpath d='M47 19 L52 8 L55 24 Z'/%3E%3Cellipse cx='36' cy='36' rx='22' ry='19'/%3E%3C/g%3E%3Cg fill='%23f6ecdf'%3E%3Cellipse cx='28' cy='34' rx='2.8' ry='3.6'/%3E%3Cellipse cx='44' cy='33' rx='2.8' ry='3.6'/%3E%3C/g%3E%3Cpath d='M33 42 L41 42 L37 47 Z' fill='%23ff5aa3'/%3E%3C/svg%3E"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://kopi-order.kopi-order-sg.workers.dev"
+    />
+    <meta property="og:title" content="코피 주문기 — Kopi Order" />
+    <meta
+      property="og:description"
+      content="싱가포르 커피는 이름이 곧 레시피입니다. 눌러서 조립해보세요."
+    />
+    <meta
+      property="og:image"
+      content="https://kopi-order.kopi-order-sg.workers.dev/og.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Gothic+A1:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --void: #0b0710;
+        --ink: #140d1c;
+        --ink2: #1b1126;
+        --pink: #ff2d8f;
+        --pink-soft: #ff7ab8;
+        --gold: #f0c96b;
+        --cream: #f6ecdf;
+        --dim: rgba(246, 236, 223, 0.52);
+        --dimmer: rgba(246, 236, 223, 0.32);
+        --line: rgba(246, 236, 223, 0.13);
+        --serif: "Instrument Serif", Georgia, "Nanum Myeongjo", serif;
+        --sans:
+          "Gothic A1", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        background: var(--void);
+        color: var(--cream);
+        font-family: var(--sans);
+        font-weight: 300;
+        line-height: 1.6;
+        min-height: 100vh;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* 화면 전체에 깔리는 아주 옅은 노이즈. 평평한 어두운 배경이 디지털처럼 보이는 걸 막아줍니다 */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 99;
+        opacity: 0.16;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+      }
+      ::selection {
+        background: var(--pink);
+        color: #fff;
+      }
+
+      /* ---------- 머리말 ---------- */
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.5rem clamp(1.1rem, 4vw, 3.4rem);
+        max-width: 1240px;
+        margin: 0 auto;
+      }
+      .mark {
+        font-family: var(--serif);
+        font-size: 1.32rem;
+        letter-spacing: 0.02em;
+      }
+      .mark i {
+        color: var(--pink);
+        font-style: normal;
+      }
+      .lang {
+        font-family: var(--sans);
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        color: var(--dim);
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        padding: 0.44rem 0.95rem;
+        cursor: pointer;
+        transition:
+          color 0.25s,
+          border-color 0.25s;
+      }
+      .lang:hover {
+        color: var(--cream);
+        border-color: rgba(246, 236, 223, 0.35);
+      }
+
+      /* ---------- 본문 ---------- */
+      .wrap {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 clamp(1.1rem, 4vw, 3.4rem) 4rem;
+        display: grid;
+        gap: clamp(1.6rem, 4vw, 3.6rem);
+        align-items: start;
+        grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+      }
+      @media (max-width: 900px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ---------- 무대 ---------- */
+      .stage {
+        position: relative;
+        top: 0;
+      }
+      @media (min-width: 901px) {
+        .stage {
+          position: sticky;
+          top: 0;
+          min-height: min(84vh, 760px);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+      }
+      .scene {
+        display: block;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      .stage-note {
+        font-size: 0.79rem;
+        color: var(--dimmer);
+        text-align: center;
+        margin-top: 0.5rem;
+        min-height: 2.6em;
+        padding: 0 1.6rem;
+        line-height: 1.55;
+      }
+
+      /* ---------- 패널 ---------- */
+      .eyebrow {
+        font-size: 0.66rem;
+        font-weight: 500;
+        letter-spacing: 0.24em;
+        color: var(--pink-soft);
+        text-transform: uppercase;
+        margin-bottom: 0.9rem;
+      }
+      .phrase {
+        font-family: var(--serif);
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        font-size: clamp(2.7rem, 7.4vw, 4.5rem);
+        line-height: 1.02;
+        margin-bottom: 0.85rem;
+        /* SplitText가 글자를 쪼개 세우니 잘리지 않게 여유를 둡니다 */
+        padding-bottom: 0.08em;
+        overflow: hidden;
+      }
+      .phrase .c {
+        display: inline-block;
+        will-change: transform;
+      }
+      .say-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.7rem;
+      }
+      .phonetic {
+        font-size: 0.99rem;
+        color: var(--gold);
+        letter-spacing: 0.015em;
+      }
+      .phonetic .w {
+        display: inline-block;
+      }
+      .say {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        flex: none;
+        font-family: var(--sans);
+        font-size: 0.74rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        color: var(--cream);
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        padding: 0.34rem 0.8rem;
+        cursor: pointer;
+        transition:
+          border-color 0.25s,
+          background 0.25s;
+      }
+      .say:hover {
+        border-color: var(--pink);
+        background: rgba(255, 45, 143, 0.1);
+      }
+      .say svg {
+        width: 11px;
+        height: 11px;
+        fill: currentColor;
+      }
+      .meaning {
+        font-size: 0.93rem;
+        color: var(--dim);
+        margin-bottom: 1.5rem;
+      }
+      .rule {
+        height: 1px;
+        background: var(--line);
+        margin-bottom: 1.5rem;
+      }
+
+      /* ---------- 선택지 ---------- */
+      .grp {
+        margin-bottom: 1.25rem;
+      }
+      .grp h2 {
+        font-size: 0.67rem;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--dimmer);
+        margin-bottom: 0.55rem;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .chip {
+        position: relative;
+        font-family: var(--sans);
+        font-size: 0.86rem;
+        font-weight: 400;
+        color: var(--dim);
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        padding: 0.44rem 0.92rem;
+        cursor: pointer;
+        isolation: isolate;
+        transition:
+          color 0.3s ease,
+          border-color 0.3s ease;
+      }
+      .chip:hover {
+        color: var(--cream);
+        border-color: rgba(246, 236, 223, 0.3);
+      }
+      .chip .lab {
+        position: relative;
+        z-index: 1;
+        display: block;
+        white-space: nowrap;
+      }
+      .chip .sub {
+        display: block;
+        font-size: 0.63rem;
+        letter-spacing: 0.09em;
+        opacity: 0.6;
+        margin-top: 0.05em;
+      }
+      .chip[aria-pressed="true"] {
+        color: #1a0510;
+        border-color: transparent;
+      }
+      .chip[aria-pressed="true"] .sub {
+        opacity: 0.72;
+      }
+      /* Flip이 이 알약 하나를 칩에서 칩으로 날려보냅니다 */
+      .pip {
+        position: absolute;
+        inset: -1px;
+        z-index: 0;
+        border-radius: 99px;
+        background: linear-gradient(
+          105deg,
+          var(--pink) 0%,
+          var(--pink-soft) 48%,
+          var(--gold) 100%
+        );
+        box-shadow:
+          0 0 22px rgba(255, 45, 143, 0.42),
+          0 0 6px rgba(255, 45, 143, 0.5);
+      }
+      .chip:focus-visible {
+        outline: 2px solid var(--pink-soft);
+        outline-offset: 3px;
+      }
+
+      /* ---------- 가격 ---------- */
+      .foot-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1.9rem;
+        padding-top: 1.3rem;
+        border-top: 1px solid var(--line);
+      }
+      .price-box {
+        display: flex;
+        align-items: baseline;
+        gap: 0.34rem;
+      }
+      .cur {
+        font-size: 0.85rem;
+        color: var(--dim);
+      }
+      .price {
+        font-family: var(--serif);
+        font-size: 2.3rem;
+        line-height: 1;
+        display: inline-block;
+      }
+      .pnote {
+        font-size: 0.68rem;
+        color: var(--dimmer);
+        margin-left: 0.3rem;
+      }
+      .copy {
+        font-family: var(--sans);
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        color: var(--dim);
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        padding: 0.4rem 0.9rem;
+        cursor: pointer;
+        transition:
+          color 0.25s,
+          border-color 0.25s;
+      }
+      .copy:hover {
+        color: var(--cream);
+        border-color: rgba(246, 236, 223, 0.34);
+      }
+
+      /* ---------- 낱말 ---------- */
+      .dict {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 3.4rem clamp(1.1rem, 4vw, 3.4rem) 1rem;
+        border-top: 1px solid var(--line);
+      }
+      .dict h2 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 1.85rem;
+        margin-bottom: 1.6rem;
+      }
+      .dlist {
+        display: grid;
+        gap: 1.05rem 2.6rem;
+        grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+      }
+      .dterm {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.1rem 0.85rem;
+        align-items: baseline;
+      }
+      .dterm dt {
+        font-family: var(--serif);
+        font-size: 1.13rem;
+        color: var(--gold);
+        white-space: nowrap;
+      }
+      .dterm dd {
+        font-size: 0.83rem;
+        color: var(--dim);
+        line-height: 1.55;
+      }
+      footer {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 2.4rem clamp(1.1rem, 4vw, 3.4rem) 3.4rem;
+        font-size: 0.8rem;
+        color: var(--dimmer);
+      }
+      footer b {
+        color: var(--dim);
+        font-weight: 500;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="mark">KOPI<i>.</i>ORDER</div>
+      <button class="lang" id="lang" type="button">EN</button>
+    </header>
+
+    <main class="wrap">
+      <section class="stage">
+        <svg
+          class="scene"
+          id="scene"
+          viewBox="0 98 460 268"
+          role="img"
+          aria-labelledby="sceneTitle"
+        >
+          <title id="sceneTitle">고양이 바리스타와 주문한 음료가 담긴 잔</title>
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ff2d8f" stop-opacity=".20" />
+              <stop offset="40%" stop-color="#ff2d8f" stop-opacity=".07" />
+              <stop offset="100%" stop-color="#ff2d8f" stop-opacity="0" />
+            </radialGradient>
+            <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#f0c96b" stop-opacity=".12" />
+              <stop offset="100%" stop-color="#f0c96b" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="coffeeG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7a4a29" id="cg0" />
+              <stop offset="100%" stop-color="#341b0e" id="cg1" />
+            </linearGradient>
+            <!-- 위가 투명해서 커피와 자연스럽게 번집니다 -->
+            <linearGradient id="milkG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#eddcbd" stop-opacity="0" />
+              <stop offset="28%" stop-color="#e7d2ad" stop-opacity=".92" />
+              <stop offset="100%" stop-color="#c49a68" stop-opacity="1" />
+            </linearGradient>
+            <linearGradient id="glassG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ff2d8f" stop-opacity=".22" />
+              <stop offset="20%" stop-color="#ffffff" stop-opacity=".04" />
+              <stop offset="58%" stop-color="#ffffff" stop-opacity=".02" />
+              <stop offset="86%" stop-color="#f0c96b" stop-opacity=".08" />
+              <stop offset="100%" stop-color="#f0c96b" stop-opacity=".22" />
+            </linearGradient>
+            <linearGradient id="rimG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ff5aa3" />
+              <stop offset="50%" stop-color="#ffe9f4" />
+              <stop offset="100%" stop-color="#f0c96b" />
+            </linearGradient>
+            <linearGradient id="reflG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff7ab8" stop-opacity=".18" />
+              <stop offset="100%" stop-color="#ff7ab8" stop-opacity="0" />
+            </linearGradient>
+            <radialGradient id="pool" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ff7ab8" stop-opacity=".30" />
+              <stop offset="100%" stop-color="#ff7ab8" stop-opacity="0" />
+            </radialGradient>
+            <filter id="bloom" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="2.2" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            <!-- 선을 아주 미세하게 떨리게 해서 손으로 그린 맛을 냅니다 -->
+            <filter id="rough" x="-18%" y="-18%" width="136%" height="136%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.028"
+                numOctaves="3"
+                seed="7"
+                result="n"
+              />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="n"
+                scale="2.4"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+            <filter id="rough2" x="-18%" y="-18%" width="136%" height="136%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.035"
+                numOctaves="3"
+                seed="21"
+                result="n"
+              />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="n"
+                scale="2.1"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+            <!-- 잔이 모프되면 이 클립도 같이 따라갑니다. use가 살아 있는 참조라서요 -->
+            <clipPath id="vclip"><use href="#vshape" /></clipPath>
+          </defs>
+
+          <ellipse cx="175" cy="240" rx="300" ry="270" fill="url(#glow)" />
+          <ellipse cx="350" cy="300" rx="170" ry="150" fill="url(#glow2)" />
+
+          <g id="reflect" opacity=".55">
+            <use
+              href="#vshape"
+              fill="url(#reflG)"
+              stroke="none"
+              transform="matrix(1,0,0,-0.32,0,448.8)"
+            />
+          </g>
+          <ellipse
+            id="poolShadow"
+            cx="175"
+            cy="341"
+            rx="72"
+            ry="8"
+            fill="url(#pool)"
+          />
+
+          <line
+            id="counter"
+            x1="14"
+            y1="340"
+            x2="446"
+            y2="340"
+            stroke="#f0c96b"
+            stroke-opacity=".5"
+            stroke-width="1.1"
+          />
+
+          <!-- 잔 안쪽: 액체, 각설탕, 얼음 -->
+          <g clip-path="url(#vclip)">
+            <rect
+              id="liq-coffee"
+              x="112"
+              y="226"
+              width="128"
+              height="114"
+              fill="url(#coffeeG)"
+            />
+            <rect
+              id="liq-milk"
+              x="112"
+              y="292"
+              width="128"
+              height="48"
+              fill="url(#milkG)"
+            />
+            <ellipse
+              id="meniscus"
+              cx="175"
+              cy="226"
+              rx="45.5"
+              ry="5.6"
+              fill="#a97040"
+              opacity=".72"
+            />
+            <rect
+              id="wallLight"
+              x="130"
+              y="226"
+              width="9"
+              height="114"
+              fill="#fff"
+              opacity=".09"
+            />
+            <g id="cubes"></g>
+            <g id="ice"></g>
+            <g id="fxIn"></g>
+          </g>
+
+          <!-- 손잡이는 잔보다 뒤에 둡니다. 유리가 반투명이라 겹치는 부분이 자연스럽게 비쳐요 -->
+          <path
+            id="handle"
+            d="M231,212 C268,214 272,272 228,278"
+            fill="none"
+            stroke="url(#rimG)"
+            stroke-width="4.5"
+            stroke-linecap="round"
+            opacity="0"
+          />
+
+          <!-- 잔 자체. MorphSVG가 이 path 하나를 바꾸면 위 클립도 같이 바뀝니다 -->
+          <path
+            id="vshape"
+            d="M128,150 C128,150 133,324 133,324 C133.4,334 140,340 148,340 L202,340 C210,340 216.6,334 217,324 C217,324 222,150 222,150 Z"
+            fill="url(#glassG)"
+            stroke="url(#rimG)"
+            stroke-opacity=".9"
+            stroke-width="1.5"
+            filter="url(#bloom)"
+          />
+          <path
+            id="glint1"
+            d="M137,176 C136.6,176 135.4,214 135.4,214"
+            stroke="#fff"
+            stroke-opacity=".34"
+            stroke-width="2.4"
+            fill="none"
+            stroke-linecap="round"
+          />
+          <path
+            id="glint2"
+            d="M214,268 C214,268 213,300 213,300"
+            stroke="#f0c96b"
+            stroke-opacity=".22"
+            stroke-width="1.8"
+            fill="none"
+            stroke-linecap="round"
+          />
+          <ellipse
+            id="rim"
+            cx="175"
+            cy="150"
+            rx="47"
+            ry="7.5"
+            fill="#0b0710"
+            fill-opacity=".5"
+            stroke="url(#rimG)"
+            stroke-width="1.7"
+            filter="url(#bloom)"
+          />
+
+          <!-- 봉지 빨대는 잔 앞에 나옵니다 -->
+          <g id="straw" fill="none" stroke-linecap="round" opacity="0">
+            <path
+              d="M186,326 L218,140"
+              stroke="#ff5aa3"
+              stroke-width="4.4"
+              stroke-opacity=".9"
+            />
+            <path
+              d="M148,174 C157,158 193,158 202,174"
+              stroke="#f0c96b"
+              stroke-width="2.2"
+              stroke-opacity=".85"
+            />
+          </g>
+
+          <!-- 뜨거운 음료에서 올라오는 김. 잔 입구 높이에 맞춰 통째로 오르내립니다 -->
+          <g
+            id="steam"
+            fill="none"
+            stroke="#ffe9f4"
+            stroke-opacity=".34"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          >
+            <path d="M160,144 C152,130 168,122 160,108" />
+            <path d="M177,140 C169,124 185,116 177,102" />
+            <path d="M194,146 C186,132 202,124 194,110" />
+          </g>
+
+          <!-- 붓는 줄기 -->
+          <path
+            id="stream"
+            d="M175,120 L175,224"
+            stroke="#c98a4e"
+            stroke-width="3.4"
+            stroke-linecap="round"
+            fill="none"
+            opacity="0"
+          />
+
+          <!-- 고양이 ─ 좌표는 0..200 자기 틀 기준이고, 바깥 그룹이 카운터 위에 올려놓습니다.
+           움직이는 그룹(#tail/#catBody/#catHead/#earL/#earR)은 변형만 맡고
+           손떨림 필터는 그 안쪽 정적 그림에 걸어서 매 프레임 다시 계산되지 않게 합니다 -->
+          <g id="napPlace" transform="translate(12,248.5) scale(.5)">
+            <g
+              id="nap"
+              stroke="#49566f"
+              stroke-width="3.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <g filter="url(#rough2)">
+                <path
+                  d="M146,176 C170,180 188,168 186,150 C184,135 170,128 159,136"
+                  fill="none"
+                  stroke="#49566f"
+                  stroke-width="25"
+                />
+                <path
+                  d="M146,176 C170,180 188,168 186,150 C184,135 170,128 159,136"
+                  fill="none"
+                  stroke="#e8eef7"
+                  stroke-width="19"
+                />
+                <path
+                  d="M42,100 C34,76 45,70 59,86 L70,102 Z"
+                  fill="#e8eef7"
+                  stroke-dasharray="32 8 22 7"
+                />
+                <path
+                  d="M100,96 C110,74 119,72 116,91 L111,106 Z"
+                  fill="#e8eef7"
+                  stroke-dasharray="28 7 20 6"
+                />
+              </g>
+              <g id="napBody" filter="url(#rough2)">
+                <path
+                  d="M30,168 C24,136 44,114 80,112 C120,110 150,128 154,154 C157,172 140,182 112,183
+                     C76,184 36,182 30,168 Z"
+                  fill="#e8eef7"
+                  stroke-dasharray="58 10 72 9 50 12 80"
+                />
+                <path
+                  d="M106,122 C120,116 138,122 144,136 C148,146 140,154 128,152 C114,150 102,136 106,122 Z"
+                  fill="#bcd3ea"
+                  stroke="none"
+                  opacity=".8"
+                />
+              </g>
+              <g filter="url(#rough2)">
+                <ellipse
+                  cx="76"
+                  cy="128"
+                  rx="42"
+                  ry="36"
+                  fill="#e8eef7"
+                  stroke-dasharray="66 10 48 9 60 11 44"
+                />
+                <path
+                  d="M48,104 C56,96 68,98 70,108 C72,116 62,120 54,116 C48,113 45,109 48,104 Z"
+                  fill="#bcd3ea"
+                  stroke="none"
+                  opacity=".65"
+                />
+                <path
+                  d="M44,166 C42,154 56,148 68,152 C78,155 80,164 75,170 Z"
+                  fill="#f7fafd"
+                  stroke-width="2.4"
+                  stroke-dasharray="28 7 22"
+                />
+              </g>
+              <g fill="none" stroke="#2f3a4e" stroke-width="2.9">
+                <path d="M54,126 C58,132 66,132 70,126" />
+                <path d="M84,126 C88,132 96,132 100,126" />
+              </g>
+              <ellipse
+                cx="77"
+                cy="139"
+                rx="3.4"
+                ry="2.5"
+                fill="#2f3a4e"
+                stroke="none"
+              />
+              <g
+                stroke="#49566f"
+                stroke-width="1.4"
+                stroke-opacity=".55"
+                fill="none"
+              >
+                <path d="M36,130 C24,128 16,128 8,130" />
+                <path d="M36,137 C24,140 18,144 12,148" />
+              </g>
+            </g>
+          </g>
+
+          <g id="catPlace" transform="translate(272,188) scale(.8)">
+            <g
+              id="cat"
+              stroke="#6d5740"
+              stroke-width="3.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <g id="tail">
+                <g filter="url(#rough2)">
+                  <path
+                    d="M134,182 C158,188 180,176 181,157 C182,142 170,133 159,140"
+                    fill="none"
+                    stroke="#6d5740"
+                    stroke-width="20"
+                  />
+                  <path
+                    d="M134,182 C158,188 180,176 181,157 C182,142 170,133 159,140"
+                    fill="none"
+                    stroke="#d8c6ad"
+                    stroke-width="14"
+                  />
+                </g>
+              </g>
+              <g id="catBody">
+                <g filter="url(#rough2)">
+                  <path
+                    d="M76,110 C62,132 60,162 70,178 C80,190 104,192 120,190 C142,187 152,176 152,160
+                       C152,136 142,114 128,104 Z"
+                    fill="#d8c6ad"
+                    stroke-dasharray="58 10 46 9 64 11 76"
+                  />
+                  <path
+                    d="M105,114 C93,126 91,152 99,168 C107,182 127,182 133,168 C139,154 135,126 125,114 Z"
+                    fill="#f3e9d8"
+                    stroke="none"
+                  />
+                  <path
+                    d="M84,190 C82,180 88,174 96,176 C102,178 103,184 102,190 Z"
+                    fill="#efe3cf"
+                    stroke-width="2.5"
+                    stroke-dasharray="22 6"
+                  />
+                  <path
+                    d="M112,190 C110,180 116,174 124,176 C130,178 131,184 130,190 Z"
+                    fill="#efe3cf"
+                    stroke-width="2.5"
+                    stroke-dasharray="22 6"
+                  />
+                </g>
+              </g>
+              <!-- 바깥은 GSAP이 재료 넣을 때 돌리고, 안쪽 기울기는 고정입니다 -->
+              <g id="catHead">
+                <g id="headTilt" transform="rotate(-13 106 70)">
+                  <g id="earL">
+                    <g filter="url(#rough2)">
+                      <path
+                        d="M70,44 C64,18 74,11 88,28 L101,46 Z"
+                        fill="#d8c6ad"
+                        stroke-dasharray="36 8 24 7"
+                      />
+                    </g>
+                  </g>
+                  <g id="earR">
+                    <g filter="url(#rough2)">
+                      <path
+                        d="M144,42 C152,16 142,9 128,26 L115,44 Z"
+                        fill="#d8c6ad"
+                        stroke-dasharray="34 9 22 7"
+                      />
+                    </g>
+                  </g>
+                  <g filter="url(#rough2)">
+                    <ellipse
+                      cx="106"
+                      cy="68"
+                      rx="42"
+                      ry="37"
+                      fill="#d8c6ad"
+                      stroke-dasharray="66 10 50 9 58 11 46"
+                    />
+                    <path
+                      d="M92,84 C84,74 86,60 96,56 C108,51 120,56 122,68 C124,80 114,90 104,90 Z"
+                      fill="#f3e9d8"
+                      stroke="none"
+                    />
+                  </g>
+                  <!-- 눈은 필터 밖에 둡니다. 깜빡일 때마다 난류를 다시 계산하지 않도록 -->
+                  <g id="eyes" stroke="none" fill="#4a3a28">
+                    <ellipse class="pupil" cx="92" cy="66" rx="4" ry="5.2" />
+                    <ellipse class="pupil" cx="120" cy="66" rx="4" ry="5.2" />
+                  </g>
+                  <path
+                    d="M102,78 L112,78 L107,83 Z"
+                    fill="#c98f7e"
+                    stroke="none"
+                  />
+                  <path
+                    d="M107,83 C107,88 102,89 99,86 M107,83 C107,88 112,89 115,86"
+                    fill="none"
+                    stroke="#4a3a28"
+                    stroke-width="1.8"
+                  />
+                  <ellipse
+                    cx="78"
+                    cy="78"
+                    rx="9"
+                    ry="5"
+                    fill="#e8737f"
+                    opacity=".28"
+                    stroke="none"
+                  />
+                  <ellipse
+                    cx="134"
+                    cy="78"
+                    rx="9"
+                    ry="5"
+                    fill="#e8737f"
+                    opacity=".28"
+                    stroke="none"
+                  />
+                  <g
+                    id="whisk"
+                    stroke="#6d5740"
+                    stroke-width="1.4"
+                    stroke-opacity=".55"
+                    fill="none"
+                  >
+                    <path d="M62,64 C50,60 42,58 34,60" />
+                    <path d="M62,72 C50,74 42,78 36,82" />
+                    <path d="M150,62 C162,58 170,56 178,58" />
+                    <path d="M150,70 C162,72 170,76 176,80" />
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <g id="fx"></g>
+        </svg>
+        <p class="stage-note" id="tip"></p>
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow" id="eyebrow">Singapore · Hawker Coffee</p>
+        <h1 class="phrase" id="phrase">Kopi</h1>
+        <div class="say-row">
+          <p class="phonetic" id="phonetic"></p>
+          <button class="say" id="say" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M8 2 4.5 5H2v6h2.5L8 14zM11 5.5a3.6 3.6 0 0 1 0 5M13 3.4a6.6 6.6 0 0 1 0 9.2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span id="sayLab">읽어주기</span>
+          </button>
+        </div>
+        <p class="meaning" id="meaning"></p>
+        <div class="rule"></div>
+        <div id="controls"></div>
+        <div class="foot-row">
+          <div class="price-box">
+            <span class="cur">S$</span
+            ><span class="price" id="price">1.40</span>
+            <span class="pnote" id="pnote"></span>
+          </div>
+          <button class="copy" id="copy" type="button">복사</button>
+        </div>
+      </section>
+    </main>
+
+    <section class="dict">
+      <h2 id="dictTitle">말 배우기</h2>
+      <div class="dlist" id="dlist"></div>
+    </section>
+    <footer><b id="footer"></b></footer>
+
+    <script src="vendor/gsap.min.js"></script>
+    <script src="vendor/CustomEase.min.js"></script>
+    <script src="vendor/CustomBounce.min.js"></script>
+    <script src="vendor/CustomWiggle.min.js"></script>
+    <script src="vendor/Flip.min.js"></script>
+    <script src="vendor/MorphSVGPlugin.min.js"></script>
+    <script src="vendor/SplitText.min.js"></script>
+    <script src="vendor/DrawSVGPlugin.min.js"></script>
+    <script src="vendor/Physics2DPlugin.min.js"></script>
+    <script src="vendor/MotionPathPlugin.min.js"></script>
+    <script src="vendor/ScrollTrigger.min.js"></script>
+    <script>
+      gsap.registerPlugin(
+        CustomEase,
+        CustomBounce,
+        CustomWiggle,
+        Flip,
+        MorphSVGPlugin,
+        SplitText,
+        DrawSVGPlugin,
+        Physics2DPlugin,
+        MotionPathPlugin,
+        ScrollTrigger,
+      );
+
+      const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* 기본 이징으로는 안 나오는 손맛이라 곡선을 직접 그렸습니다 */
+      CustomEase.create(
+        "pop",
+        "M0,0 C0.13,0 0.16,1.1 0.38,1.05 0.58,1.01 0.72,1 1,1",
+      );
+      CustomEase.create("swoop", "M0,0 C0.3,0 0.1,1 1,1");
+      CustomBounce.create("plop", {
+        strength: 0.58,
+        squash: 1.5,
+        endAtStart: false,
+      });
+      CustomWiggle.create("ripple", { wiggles: 7, type: "easeOut" });
+      CustomWiggle.create("twitch", { wiggles: 4, type: "easeOut" });
+
+      /* ================= 데이터 ================= */
+      const OPT = {
+        base: [
+          {
+            id: "kopi",
+            word: "Kopi",
+            say: "코피",
+            tts: "koh pee",
+            color: ["#6b3d1e", "#2a1409"],
+            price: 1.4,
+          },
+          {
+            id: "teh",
+            word: "Teh",
+            say: "테",
+            tts: "tay",
+            color: ["#a86a28", "#4e2a0e"],
+            price: 1.4,
+          },
+          {
+            id: "milo",
+            word: "Milo",
+            say: "밀로",
+            tts: "my loh",
+            color: ["#7d4d29", "#331a0b"],
+            price: 2.0,
+          },
+          {
+            id: "yuan",
+            word: "Yuan Yang",
+            say: "유엔양",
+            tts: "yuen yang",
+            color: ["#7f4d24", "#33190a"],
+            price: 1.8,
+          },
+        ],
+        milk: [
+          { id: "condensed", word: "", say: "", tts: "" },
+          { id: "evap", word: "C", say: "씨", tts: "see" },
+          { id: "none", word: "O", say: "오", tts: "oh" },
+        ],
+        dino: [
+          { id: "no", word: "", say: "", tts: "" },
+          {
+            id: "yes",
+            word: "Dinosaur",
+            say: "다이노소어",
+            tts: "dye no sore",
+            price: 1.2,
+          },
+        ],
+        sugar: [
+          { id: "normal", word: "", say: "", tts: "" },
+          { id: "less", word: "Siu Dai", say: "시우 다이", tts: "syoo dye" },
+          { id: "more", word: "Gah Dai", say: "가 다이", tts: "gah dye" },
+          { id: "none", word: "Kosong", say: "코송", tts: "koh song" },
+        ],
+        strength: [
+          { id: "normal", word: "", say: "", tts: "" },
+          { id: "gao", word: "Gao", say: "가우", tts: "gow", price: 0.3 },
+          { id: "po", word: "Po", say: "포", tts: "poh" },
+          {
+            id: "dilo",
+            word: "Di Lo",
+            say: "디 로",
+            tts: "dee loh",
+            price: 0.5,
+          },
+        ],
+        ice: [
+          { id: "hot", word: "", say: "", tts: "" },
+          { id: "peng", word: "Peng", say: "펭", tts: "peng", price: 0.4 },
+        ],
+        dabao: [
+          { id: "here", word: "", say: "", tts: "" },
+          {
+            id: "dabao",
+            word: "Dabao",
+            say: "다바오",
+            tts: "dah bao",
+            price: 0.2,
+          },
+        ],
+      };
+
+      const MIX = {
+        condensed: {
+          normal: [55, 55],
+          less: [32, 32],
+          more: [80, 80],
+          none: [0, 0],
+        },
+        evap: {
+          normal: [58, 50],
+          less: [58, 28],
+          more: [58, 78],
+          none: [58, 0],
+        },
+        none: { normal: [0, 50], less: [0, 28], more: [0, 78], none: [0, 0] },
+      };
+
+      const T = {
+        ko: {
+          lang: "EN",
+          eyebrow: "싱가포르 · 호커센터 커피",
+          legends: {
+            base: "뭐 마실래요",
+            milk: "우유",
+            dino: "밀로 가루 추가",
+            sugar: "단맛",
+            strength: "농도",
+            ice: "온도",
+            dabao: "여기서 / 가져가기",
+          },
+          chips: {
+            base: {
+              kopi: ["코피", "Kopi"],
+              teh: ["테", "Teh"],
+              milo: ["밀로", "Milo"],
+              yuan: ["유엔양", "Yuan Yang"],
+            },
+            milk: {
+              condensed: ["연유", "기본"],
+              evap: ["무가당 연유", "C"],
+              none: ["안 넣음", "O"],
+            },
+            dino: {
+              no: ["그냥 밀로", "기본"],
+              yes: ["다이노소어", "Dinosaur"],
+            },
+            sugar: {
+              normal: ["기본", ""],
+              less: ["적게", "Siu Dai"],
+              more: ["많이", "Gah Dai"],
+              none: ["없이", "Kosong"],
+            },
+            strength: {
+              normal: ["기본", ""],
+              gao: ["진하게", "Gao"],
+              po: ["연하게", "Po"],
+              dilo: ["아주 진하게", "Di Lo"],
+            },
+            ice: { hot: ["뜨겁게", ""], peng: ["얼음", "Peng"] },
+            dabao: { here: ["여기서", ""], dabao: ["포장", "Dabao"] },
+          },
+          desc: {
+            base: {
+              kopi: "커피",
+              teh: "홍차",
+              milo: "초코 맥아 음료",
+              yuan: "커피와 홍차를 섞은 것",
+            },
+            milk: {
+              condensed: "달달한 연유를 넣고",
+              evap: "무가당 연유를 넣고",
+              none: "우유 없이",
+            },
+            sugar: {
+              normal: "",
+              less: "덜 달게",
+              more: "더 달게",
+              none: "설탕 없이",
+            },
+            strength: {
+              normal: "",
+              gao: "진하게",
+              po: "연하게",
+              dilo: "물 없이 아주 진하게",
+            },
+            dino: { no: "", yes: "밀로 가루를 위에 잔뜩 올려서" },
+            ice: "얼음 넣어서",
+            here: "자리에서 마시게",
+            dabao: "봉지에 포장해서",
+          },
+          tips: {
+            kosong:
+              "연유가 이미 달아서, Kosong이라고 하면 보통 우유까지 뺀 걸로 알아들어요. 덜 달게만 원하면 Siu Dai가 안전합니다.",
+            dilo: "Di Lo는 물을 거의 안 탄 원액이에요. 오후에 마시면 밤에 깨어 있게 됩니다.",
+            dino: "다이노소어는 밀로 위에 가루를 산처럼 부어줍니다. 숟가락을 달라고 하세요.",
+            bag: "봉지째 얼음까지 담아 빨대를 꽂아줘요. 손잡이가 없으니 끈을 손가락에 걸고 다니면 됩니다.",
+            yuan: "커피와 홍차를 섞은 음료예요. 호커센터마다 비율이 달라서 가게 성격이 드러납니다.",
+            evap: "무가당 연유라 우유는 그대로 두고 설탕을 따로 넣습니다.",
+          },
+          say: "읽어주기",
+          copy: "복사",
+          copied: "복사됨",
+          copyFail: "복사 안 됨",
+          noVoice: "이 브라우저에 영어 목소리가 없어요",
+          priceNote: "대략",
+          dictTitle: "말 배우기",
+          dict: [
+            [
+              "Kopi",
+              "말레이어로 커피. 마가린과 설탕에 볶은 로부스타 원두를 씁니다.",
+            ],
+            [
+              "Teh",
+              "말레이어로 차. 한자 茶(테, 차)가 민난어를 거쳐 들어온 말입니다.",
+            ],
+            ["O", "烏(오, 검다). 우유를 빼고 설탕만 넣습니다."],
+            [
+              "C",
+              "鮮(씨, 신선하다). 연유 대신 무가당 연유를 씁니다. 하이난어 발음에서 왔다는 설이 유력합니다.",
+            ],
+            ["Kosong", "말레이어로 0. 설탕을 아예 빼달라는 뜻입니다."],
+            ["Siu Dai", "少甜(시우 다이, 적게 달게). 연유를 덜 넣어줍니다."],
+            ["Gah Dai", "加甜(가 다이, 더 달게). 연유를 더 넣어줍니다."],
+            ["Gao", "厚(가우, 두껍다). 물을 덜 타서 진하게 뽑습니다."],
+            ["Po", "薄(포, 얇다). 물을 더 타서 연하게 만듭니다."],
+            ["Di Lo", "直落(디 로, 곧장). 물을 안 섞고 내린 그대로 줍니다."],
+            ["Peng", "冰(펭, 얼음). 얼음을 채워줍니다."],
+            [
+              "Dabao",
+              "打包(다바오, 싸가다). 비닐봉지에 담고 끈으로 묶어 빨대를 꽂아줍니다.",
+            ],
+            [
+              "Yuan Yang",
+              "鴛鴦(유엔양, 원앙). 원앙 한 쌍처럼 커피와 홍차를 짝지어 섞은 음료입니다.",
+            ],
+            [
+              "Dinosaur",
+              "밀로 위에 밀로 가루를 산처럼 얹은 것. 한자가 아니라 싱가포르에서 붙인 이름입니다.",
+            ],
+          ],
+          footer: "발음은 참고용이에요. 짧고 크게 말하면 대부분 알아듣습니다.",
+        },
+        en: {
+          lang: "한국어",
+          eyebrow: "Singapore · Hawker Coffee",
+          legends: {
+            base: "What are you drinking",
+            milk: "Milk",
+            dino: "Extra Milo powder",
+            sugar: "Sweetness",
+            strength: "Strength",
+            ice: "Temperature",
+            dabao: "Here / takeaway",
+          },
+          chips: {
+            base: {
+              kopi: ["Kopi", "coffee"],
+              teh: ["Teh", "black tea"],
+              milo: ["Milo", "chocolate malt"],
+              yuan: ["Yuan Yang", "coffee + tea"],
+            },
+            milk: {
+              condensed: ["Condensed", "default"],
+              evap: ["Evaporated", "C"],
+              none: ["No milk", "O"],
+            },
+            dino: { no: ["Regular", ""], yes: ["Dinosaur", "Dinosaur"] },
+            sugar: {
+              normal: ["Normal", ""],
+              less: ["Less", "Siu Dai"],
+              more: ["More", "Gah Dai"],
+              none: ["None", "Kosong"],
+            },
+            strength: {
+              normal: ["Normal", ""],
+              gao: ["Strong", "Gao"],
+              po: ["Weak", "Po"],
+              dilo: ["Extra strong", "Di Lo"],
+            },
+            ice: { hot: ["Hot", ""], peng: ["Iced", "Peng"] },
+            dabao: { here: ["Here", ""], dabao: ["Takeaway", "Dabao"] },
+          },
+          desc: {
+            base: {
+              kopi: "coffee",
+              teh: "black tea",
+              milo: "chocolate malt drink",
+              yuan: "coffee mixed with tea",
+            },
+            milk: {
+              condensed: "with sweetened condensed milk",
+              evap: "with evaporated milk",
+              none: "no milk",
+            },
+            sugar: {
+              normal: "",
+              less: "less sweet",
+              more: "extra sweet",
+              none: "no sugar",
+            },
+            strength: {
+              normal: "",
+              gao: "strong",
+              po: "weak",
+              dilo: "undiluted and very strong",
+            },
+            dino: { no: "", yes: "with a mound of Milo powder on top" },
+            ice: "over ice",
+            here: "to drink here",
+            dabao: "bagged to go",
+          },
+          tips: {
+            kosong:
+              "Condensed milk is already sweet, so Kosong is usually heard as no milk either. If you only want it less sweet, Siu Dai is the safer word.",
+            dilo: "Di Lo is barely diluted. Order it in the afternoon and you will meet the ceiling at night.",
+            dino: "A Dinosaur gets a mountain of undissolved Milo powder on top. Ask for a spoon.",
+            bag: "It comes in a bag with the ice, tied with string and a straw poked in. Hook the string on a finger and walk.",
+            yuan: "Coffee and tea in one cup. Every stall mixes it differently, which tells you a lot about the stall.",
+            evap: "Evaporated milk is unsweetened, so sugar goes in separately.",
+          },
+          say: "Say it",
+          copy: "Copy",
+          copied: "Copied",
+          copyFail: "Copy failed",
+          noVoice: "No English voice on this browser",
+          priceNote: "approx",
+          dictTitle: "The words",
+          dict: [
+            [
+              "Kopi",
+              "Malay for coffee. Robusta beans roasted with margarine and sugar.",
+            ],
+            ["Teh", "Malay for tea, from 茶 (teh, tea) by way of Hokkien."],
+            ["O", "烏 (oh, black). No milk, sugar only."],
+            [
+              "C",
+              "鮮 (see, fresh). Evaporated milk instead of condensed. Most likely from Hainanese.",
+            ],
+            ["Kosong", "Malay for zero. No sugar at all."],
+            [
+              "Siu Dai",
+              "少甜 (siu dai, less sweet). Less condensed milk goes in.",
+            ],
+            [
+              "Gah Dai",
+              "加甜 (gah dai, more sweet). More condensed milk goes in.",
+            ],
+            ["Gao", "厚 (gao, thick). Less water, a stronger brew."],
+            ["Po", "薄 (po, thin). More water."],
+            ["Di Lo", "直落 (di lo, straight through). Poured undiluted."],
+            ["Peng", "冰 (peng, ice). Served over ice."],
+            [
+              "Dabao",
+              "打包 (dabao, to pack). Bagged, tied with string, straw poked in.",
+            ],
+            [
+              "Yuan Yang",
+              "鴛鴦 (yuan yang, mandarin ducks). Coffee and tea paired like the ducks.",
+            ],
+            [
+              "Dinosaur",
+              "Milo buried under a mountain of Milo powder. Not Chinese, a Singapore invention.",
+            ],
+          ],
+          footer:
+            "Pronunciations are a guide. Say it short and loud and most stalls will get it.",
+        },
+      };
+
+      /* ================= 잔 ================= */
+      const BASE_Y = 340;
+      const VESSEL = {
+        glass: {
+          d: "M128,150 C128,150 133,324 133,324 C133.4,334 140,340 148,340 L202,340 C210,340 216.6,334 217,324 C217,324 222,150 222,150 Z",
+          fill: 226,
+          rx: 45.5,
+          rim: { cy: 150, rx: 47, ry: 7.5 },
+          extra: null,
+          pourFrom: 124,
+          g1: "M137,176 C136.6,176 135.4,214 135.4,214",
+          g2: "M214,268 C214,268 213,300 213,300",
+        },
+        mug: {
+          d: "M120,188 C120,188 127,314 127,314 C128,330 138,340 150,340 L200,340 C212,340 222,330 223,314 C223,314 230,188 230,188 Z",
+          fill: 218,
+          rx: 51,
+          rim: { cy: 188, rx: 55, ry: 8.6 },
+          extra: "handle",
+          pourFrom: 158,
+          g1: "M129,208 C128.7,208 127.6,248 127.6,248",
+          g2: "M221,258 C221,258 220,290 220,290",
+        },
+        bag: {
+          d: "M146,172 C146,172 119,288 119,288 C116,318 141,342 175,342 C209,342 234,318 231,288 C231,288 204,172 204,172 Z",
+          fill: 214,
+          rx: 36,
+          rim: { cy: 172, rx: 29, ry: 5 },
+          extra: "straw",
+          pourFrom: 142,
+          g1: null,
+          g2: null,
+        },
+      };
+
+      /* ================= 상태 ================= */
+      let lang = (navigator.language || "en").toLowerCase().startsWith("ko")
+        ? "ko"
+        : "en";
+      const state = {
+        base: "kopi",
+        milk: "condensed",
+        dino: "no",
+        sugar: "normal",
+        strength: "normal",
+        ice: "hot",
+        dabao: "here",
+      };
+      const pick = (g, id) => OPT[g].find((o) => o.id === id);
+      const $ = (s) => document.querySelector(s);
+      const NS = "http://www.w3.org/2000/svg";
+      const el = (n, a = {}) => {
+        const e = document.createElementNS(NS, n);
+        for (const k in a) e.setAttribute(k, a[k]);
+        return e;
+      };
+
+      let split = null,
+        phraseText = "",
+        ttsWords = [],
+        firstPaint = true;
+      let vesselKind = "glass",
+        prevSig = null;
+      const priceProxy = { v: 0 };
+      let priceReady = false;
+      let busyTl = null;
+
+      /* ================= 선택지 만들기 ================= */
+      function groupsFor() {
+        return state.base === "milo"
+          ? ["base", "dino", "ice", "dabao"]
+          : ["base", "milk", "sugar", "strength", "ice", "dabao"];
+      }
+
+      function buildControls() {
+        const t = T[lang],
+          box = $("#controls");
+        box.textContent = "";
+        groupsFor().forEach((g) => {
+          const wrap = document.createElement("div");
+          wrap.className = "grp";
+          const h = document.createElement("h2");
+          h.textContent = t.legends[g];
+          wrap.appendChild(h);
+          const row = document.createElement("div");
+          row.className = "row";
+          row.id = "g-" + g;
+          OPT[g].forEach((o) => {
+            const b = document.createElement("button");
+            b.className = "chip";
+            b.type = "button";
+            b.dataset.g = g;
+            b.dataset.id = o.id;
+            const on = state[g] === o.id;
+            b.setAttribute("aria-pressed", on ? "true" : "false");
+            const [main, sub] = t.chips[g][o.id];
+            const lab = document.createElement("span");
+            lab.className = "lab";
+            lab.textContent = main;
+            if (sub) {
+              const s = document.createElement("span");
+              s.className = "sub";
+              s.textContent = sub;
+              lab.appendChild(s);
+            }
+            b.appendChild(lab);
+            if (on) b.appendChild(el2pip());
+            b.addEventListener("click", () => choose(g, o.id, b));
+            row.appendChild(b);
+          });
+          wrap.appendChild(row);
+          box.appendChild(wrap);
+        });
+      }
+      function el2pip() {
+        const s = document.createElement("span");
+        s.className = "pip";
+        return s;
+      }
+
+      /* 알약을 새 칩으로 옮기고 Flip에게 그 사이를 날아가게 시킵니다 */
+      function movePip(row, target) {
+        const pip = row.querySelector(".pip");
+        if (!pip || pip.parentElement === target) return;
+        if (REDUCE) {
+          target.appendChild(pip);
+          return;
+        }
+        const st = Flip.getState(pip);
+        target.appendChild(pip);
+        Flip.from(st, { duration: 0.52, ease: "power3.inOut", absolute: true });
+      }
+
+      function choose(g, id, btn) {
+        if (state[g] === id && g !== "base") return;
+        const row = btn.parentElement;
+        row
+          .querySelectorAll(".chip")
+          .forEach((c) => c.setAttribute("aria-pressed", "false"));
+        btn.setAttribute("aria-pressed", "true");
+        movePip(row, btn);
+        if (!REDUCE)
+          gsap.fromTo(
+            btn,
+            { scale: 0.9 },
+            { scale: 1, duration: 0.5, ease: "pop", overwrite: "auto" },
+          );
+        const wasMilo = state.base === "milo";
+        state[g] = id;
+        if (g === "base" && (id === "milo") !== wasMilo) buildControls();
+        render();
+      }
+
+      /* ================= 문장 · 값 ================= */
+      function compose() {
+        const t = T[lang],
+          isMilo = state.base === "milo";
+        const parts = [],
+          says = [],
+          tts = [];
+        let price = 0;
+        const add = (o) => {
+          if (!o) return;
+          if (o.price) price += o.price;
+          if (o.word) {
+            parts.push(o.word);
+            says.push(o.say);
+            tts.push(o.tts);
+          }
+        };
+        add(pick("base", state.base));
+        if (isMilo) add(pick("dino", state.dino));
+        else {
+          add(pick("milk", state.milk));
+          add(pick("sugar", state.sugar));
+          add(pick("strength", state.strength));
+        }
+        add(pick("ice", state.ice));
+        add(pick("dabao", state.dabao));
+
+        const d = t.desc,
+          out = [d.base[state.base]];
+        if (isMilo) {
+          if (d.dino[state.dino]) out.push(d.dino[state.dino]);
+        } else {
+          out.push(d.milk[state.milk]);
+          if (d.sugar[state.sugar]) out.push(d.sugar[state.sugar]);
+          if (d.strength[state.strength]) out.push(d.strength[state.strength]);
+        }
+        if (state.ice === "peng") out.push(d.ice);
+        out.push(state.dabao === "dabao" ? d.dabao : d.here);
+
+        let tip = "";
+        if (!isMilo && state.milk === "condensed" && state.sugar === "none")
+          tip = t.tips.kosong;
+        else if (state.strength === "dilo") tip = t.tips.dilo;
+        else if (isMilo && state.dino === "yes") tip = t.tips.dino;
+        else if (state.ice === "peng" && state.dabao === "dabao")
+          tip = t.tips.bag;
+        else if (state.base === "yuan") tip = t.tips.yuan;
+        else if (!isMilo && state.milk === "evap") tip = t.tips.evap;
+
+        return {
+          phrase: parts.join(" "),
+          says,
+          tts,
+          price,
+          meaning: out.join(", ") + ".",
+          tip,
+        };
+      }
+
+      /* 글자를 하나씩 세워 올립니다. 암호 같던 주문이 조립되는 느낌을 주려고요 */
+      function showPhrase(text) {
+        const node = $("#phrase");
+        if (text === phraseText) return;
+        phraseText = text;
+        if (split) {
+          split.revert();
+          split = null;
+        }
+        node.textContent = text;
+        if (REDUCE || firstPaint) return;
+        split = new SplitText(node, { type: "chars", charsClass: "c" });
+        gsap.from(split.chars, {
+          yPercent: 115,
+          opacity: 0,
+          duration: 0.55,
+          ease: "power3.out",
+          stagger: { each: 0.024, from: "start" },
+        });
+      }
+
+      function showPhonetic(words) {
+        const node = $("#phonetic");
+        node.textContent = "";
+        words.forEach((w, i) => {
+          if (i) node.append(" ");
+          const s = document.createElement("span");
+          s.className = "w";
+          s.textContent = w;
+          node.appendChild(s);
+        });
+      }
+
+      function showPrice(p) {
+        const node = $("#price");
+        if (!priceReady) {
+          priceProxy.v = p;
+          node.textContent = p.toFixed(2);
+          priceReady = true;
+          return;
+        }
+        if (Math.abs(priceProxy.v - p) < 0.001) return;
+        gsap.to(priceProxy, {
+          v: p,
+          duration: 0.5,
+          ease: "power2.out",
+          overwrite: true,
+          onUpdate() {
+            node.textContent = priceProxy.v.toFixed(2);
+          },
+        });
+        if (!REDUCE)
+          gsap.fromTo(
+            node,
+            { scale: 1.13 },
+            {
+              scale: 1,
+              duration: 0.5,
+              ease: "pop",
+              transformOrigin: "left center",
+            },
+          );
+      }
+
+      /* ================= 잔 · 액체 ================= */
+      function vesselFor() {
+        if (state.dabao === "dabao") return "bag";
+        if (state.ice === "peng") return "glass";
+        return "mug";
+      }
+
+      function applyVessel(kind, instant) {
+        const v = VESSEL[kind],
+          d = instant || REDUCE ? 0 : 0.72;
+        gsap.to("#vshape", {
+          morphSVG: v.d,
+          duration: d,
+          ease: "power3.inOut",
+        });
+        gsap.to("#rim", { attr: v.rim, duration: d, ease: "power3.inOut" });
+        gsap.to("#handle", {
+          opacity: v.extra === "handle" ? 1 : 0,
+          duration: d ? 0.4 : 0,
+        });
+        gsap.to("#straw", {
+          opacity: v.extra === "straw" ? 1 : 0,
+          duration: d ? 0.4 : 0,
+        });
+        /* 김은 잔 입구에 붙어 있어야 하니 잔이 바뀌면 통째로 따라 올라갑니다 */
+        gsap.to("#steam", {
+          y: v.rim.cy - 146,
+          duration: d,
+          ease: "power3.inOut",
+        });
+        /* 반사광 위치는 잔 모양마다 달라서, 흐려진 사이에 슬쩍 바꿔 끼웁니다 */
+        [
+          ["#glint1", v.g1],
+          ["#glint2", v.g2],
+        ].forEach(([sel, path]) => {
+          const node = $(sel);
+          if (!path) {
+            gsap.to(node, { opacity: 0, duration: d ? 0.3 : 0 });
+            return;
+          }
+          if (instant || REDUCE) {
+            node.setAttribute("d", path);
+            gsap.set(node, { opacity: 1 });
+            return;
+          }
+          gsap
+            .timeline()
+            .to(node, { opacity: 0, duration: 0.22 })
+            .add(() => node.setAttribute("d", path))
+            .to(node, { opacity: 1, duration: 0.34 });
+        });
+        if (!instant && !REDUCE) {
+          gsap.fromTo(
+            "#vshape",
+            { scaleY: 0.94, transformOrigin: "50% 100%" },
+            { scaleY: 1, duration: 0.9, ease: "plop", overwrite: "auto" },
+          );
+        }
+        vesselKind = kind;
+      }
+
+      function applyLiquid(instant) {
+        const v = VESSEL[vesselKind];
+        const b = pick("base", state.base);
+        const isMilo = state.base === "milo";
+        const kind = isMilo ? "condensed" : state.milk;
+        const [milkPct, sugarPct] = isMilo ? [60, 55] : MIX[kind][state.sugar];
+        const top = v.fill;
+        const H = BASE_Y - top;
+        const milkTop = BASE_Y - H * (milkPct / 155);
+        const d = instant || REDUCE ? 0 : 0.7;
+
+        $("#cg0").setAttribute("stop-color", b.color[0]);
+        $("#cg1").setAttribute("stop-color", b.color[1]);
+
+        gsap.to("#liq-coffee", {
+          attr: { y: top, height: BASE_Y - top },
+          duration: d,
+          ease: "power2.out",
+        });
+        gsap.to("#liq-milk", {
+          attr: { y: milkTop, height: BASE_Y - milkTop },
+          duration: d,
+          ease: "power2.out",
+        });
+        gsap.to("#wallLight", {
+          attr: { y: top, height: BASE_Y - top },
+          duration: d,
+          ease: "power2.out",
+        });
+        gsap.to("#meniscus", {
+          attr: { cy: top, rx: v.rx },
+          duration: d,
+          ease: "power2.out",
+        });
+        drawCubes(
+          isMilo
+            ? 0
+            : kind !== "condensed" && sugarPct > 0
+              ? sugarPct < 40
+                ? 1
+                : sugarPct < 68
+                  ? 2
+                  : 3
+              : 0,
+        );
+        drawIce(state.ice === "peng" ? 4 : 0, top);
+        gsap.to("#steam", {
+          opacity: state.ice === "hot" ? 1 : 0,
+          duration: 0.45,
+        });
+      }
+
+      /* 각설탕은 잔 바닥에 가라앉아 있습니다 */
+      function drawCubes(n) {
+        const g = $("#cubes");
+        g.textContent = "";
+        const spots = [
+          [160, 326],
+          [177, 329],
+          [192, 325],
+        ];
+        for (let i = 0; i < n; i++) {
+          const [x, y] = spots[i];
+          const c = el("rect", {
+            x: x - 5,
+            y: y - 5,
+            width: 10,
+            height: 10,
+            rx: 2.4,
+            fill: "#fbf3e4",
+            opacity: 0.9,
+            transform: `rotate(${-14 + i * 13} ${x} ${y})`,
+          });
+          g.appendChild(c);
+          if (!REDUCE)
+            gsap.from(c, {
+              y: "-=70",
+              opacity: 0,
+              duration: 0.55,
+              ease: "plop",
+              delay: 0.1 + i * 0.08,
+            });
+        }
+      }
+
+      function drawIce(n, top) {
+        const g = $("#ice");
+        g.textContent = "";
+        const spots = [
+          [156, top + 22],
+          [192, top + 18],
+          [172, top + 46],
+          [200, top + 50],
+        ];
+        for (let i = 0; i < n; i++) {
+          const [x, y] = spots[i];
+          const c = el("rect", {
+            x: x - 11,
+            y: y - 11,
+            width: 22,
+            height: 22,
+            rx: 5,
+            fill: "#dff1ff",
+            opacity: 0.34,
+            stroke: "#ffffff",
+            "stroke-opacity": 0.4,
+            "stroke-width": 1,
+            transform: `rotate(${-20 + i * 17} ${x} ${y})`,
+          });
+          g.appendChild(c);
+          if (!REDUCE)
+            gsap.from(c, {
+              y: "-=90",
+              rotate: -120,
+              opacity: 0,
+              duration: 0.7,
+              ease: "plop",
+              delay: 0.06 * i,
+              svgOrigin: `${x} ${y}`,
+            });
+        }
+      }
+
+      /* ================= 붓기 · 튐 ================= */
+      function pourTl(color) {
+        const v = VESSEL[vesselKind];
+        const stream = $("#stream");
+        stream.setAttribute("stroke", color);
+        stream.setAttribute("d", `M175,${v.pourFrom} L175,${v.fill - 2}`);
+        const tl = gsap.timeline();
+        tl.set(stream, { opacity: 1 })
+          .fromTo(
+            stream,
+            { drawSVG: "0% 0%" },
+            { drawSVG: "0% 100%", duration: 0.26, ease: "power2.in" },
+          )
+          .to(
+            stream,
+            { drawSVG: "100% 100%", duration: 0.3, ease: "power2.out" },
+            "+=.34",
+          )
+          .set(stream, { opacity: 0 })
+          .add(() => splash(color, v.fill), "-=.5");
+        return tl;
+      }
+
+      /* 표면에 닿는 순간 방울이 중력을 받아 튀어오릅니다 */
+      function splash(color, top) {
+        const fx = $("#fx");
+        for (let i = 0; i < 9; i++) {
+          const dot = el("circle", {
+            cx: 175,
+            cy: top,
+            r: 1.4 + Math.random() * 1.5,
+            fill: color,
+            opacity: 0.9,
+          });
+          fx.appendChild(dot);
+          gsap.to(dot, {
+            duration: 0.75 + Math.random() * 0.3,
+            physics2D: {
+              velocity: 34 + Math.random() * 46,
+              angle: 250 + Math.random() * 40,
+              gravity: 260,
+            },
+            opacity: 0,
+            ease: "none",
+            onComplete() {
+              dot.remove();
+            },
+          });
+        }
+        gsap.fromTo(
+          "#meniscus",
+          { scaleY: 1 },
+          {
+            scaleY: 1.7,
+            duration: 1,
+            ease: "ripple",
+            svgOrigin: `175 ${top}`,
+            overwrite: "auto",
+          },
+        );
+      }
+
+      /* ================= 고양이 =================
+   좌표는 모두 고양이 자기 틀(0..200) 기준입니다. 바깥 #catPlace 가 카운터 위로 옮겨줍니다.
+   숨쉬기를 크기 변화가 아니라 살짝 올렸다 내리는 걸로 한 이유: 손떨림 필터가 걸린 그룹은
+   크기가 바뀔 때마다 필터를 다시 계산해야 하지만, 위치만 바뀌면 계산해둔 걸 그대로 옮기면 됩니다 */
+      function idle() {
+        if (REDUCE) return;
+        gsap.to("#catBody", {
+          y: -1.6,
+          duration: 2.1,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+        });
+        gsap.to("#napBody", {
+          y: -1.4,
+          duration: 2.8,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+        });
+        gsap.to("#tail", {
+          rotate: 7,
+          duration: 2.6,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          svgOrigin: "136 182",
+        });
+        gsap.to("#steam path", {
+          y: -8,
+          opacity: 0,
+          duration: 2.4,
+          repeat: -1,
+          stagger: 0.55,
+          ease: "sine.out",
+          transformOrigin: "50% 100%",
+        });
+        blink();
+        twitch();
+      }
+      function blink() {
+        gsap.to("#eyes", {
+          scaleY: 0.08,
+          duration: 0.07,
+          yoyo: true,
+          repeat: 1,
+          svgOrigin: "106 66",
+          onComplete() {
+            gsap.delayedCall(1.6 + Math.random() * 4, blink);
+          },
+        });
+      }
+      function twitch() {
+        gsap.to("#earR", {
+          rotate: 10,
+          duration: 0.7,
+          ease: "twitch",
+          svgOrigin: "142 44",
+          onComplete() {
+            gsap.delayedCall(3 + Math.random() * 5, twitch);
+          },
+        });
+      }
+      /* 재료가 들어갈 때 잔 쪽으로 몸을 기울입니다 */
+      function catLean() {
+        if (REDUCE) return;
+        gsap
+          .timeline()
+          .to("#cat", {
+            rotate: -5,
+            x: -8,
+            duration: 0.4,
+            ease: "power2.out",
+            svgOrigin: "106 190",
+          })
+          .to(
+            "#catHead",
+            {
+              rotate: -8,
+              duration: 0.4,
+              ease: "power2.out",
+              svgOrigin: "106 104",
+            },
+            0,
+          )
+          .to(
+            "#cat",
+            { rotate: 0, x: 0, duration: 0.7, ease: "elastic.out(1,.55)" },
+            "+=.5",
+          )
+          .to(
+            "#catHead",
+            { rotate: 0, duration: 0.7, ease: "elastic.out(1,.55)" },
+            "<",
+          );
+      }
+      function catHop() {
+        if (REDUCE) return;
+        gsap
+          .timeline()
+          .to("#cat", { y: -14, duration: 0.24, ease: "power2.out" })
+          .to("#cat", { y: 0, duration: 0.7, ease: "plop" })
+          .to(
+            "#earL",
+            {
+              rotate: -13,
+              duration: 0.24,
+              yoyo: true,
+              repeat: 1,
+              svgOrigin: "72 46",
+            },
+            0,
+          )
+          .to(
+            "#earR",
+            {
+              rotate: 13,
+              duration: 0.24,
+              yoyo: true,
+              repeat: 1,
+              svgOrigin: "142 44",
+            },
+            0,
+          );
+      }
+
+      /* 눈동자가 마우스를 따라옵니다 */
+      function trackEyes() {
+        if (REDUCE) return;
+        const svg = $("#scene");
+        addEventListener(
+          "pointermove",
+          (e) => {
+            const r = svg.getBoundingClientRect();
+            const dx = gsap.utils.clamp(
+              -1.6,
+              1.6,
+              ((e.clientX - (r.left + r.width * 0.77)) / r.width) * 9,
+            );
+            const dy = gsap.utils.clamp(
+              -1.3,
+              1.3,
+              ((e.clientY - (r.top + r.height * 0.53)) / r.height) * 7,
+            );
+            gsap.to(".pupil", {
+              x: dx,
+              y: dy,
+              duration: 0.5,
+              ease: "power2.out",
+              overwrite: "auto",
+            });
+          },
+          { passive: true },
+        );
+      }
+
+      /* ================= 그리기 ================= */
+      function render() {
+        const t = T[lang],
+          c = compose();
+        showPhrase(c.phrase);
+        showPhonetic((lang === "ko" ? c.says : c.tts).filter(Boolean));
+        showPrice(c.price);
+        ttsWords = c.tts.filter(Boolean);
+        $("#meaning").textContent = c.meaning;
+        $("#tip").textContent = c.tip;
+
+        const kind = vesselFor();
+        if (kind !== vesselKind) applyVessel(kind, firstPaint);
+        applyLiquid(firstPaint);
+
+        /* 잔 안이 실제로 달라졌을 때만 붓습니다. 포장 토글 같은 건 부을 게 없어요 */
+        const b = pick("base", state.base);
+        const sig = [
+          state.base,
+          state.milk,
+          state.sugar,
+          state.strength,
+          state.dino,
+        ].join("|");
+        if (!firstPaint && !REDUCE && sig !== prevSig) {
+          if (busyTl) busyTl.kill();
+          busyTl = gsap.timeline();
+          busyTl.add(pourTl(b.color[0]));
+          catLean();
+          gsap.delayedCall(0.95, catHop);
+        }
+        prevSig = sig;
+      }
+
+      /* ================= 말하기 ================= */
+      function rankVoice(v) {
+        const l = (v.lang || "").replace("_", "-").toLowerCase();
+        const order = [
+          "en-sg",
+          "en-my",
+          "en-in",
+          "en-ph",
+          "en-hk",
+          "en-au",
+          "en-gb",
+        ];
+        const i = order.indexOf(l);
+        return i >= 0 ? i : l.startsWith("en") ? 20 : 99;
+      }
+      function bestVoice() {
+        const vs = speechSynthesis
+          .getVoices()
+          .filter((v) => (v.lang || "").toLowerCase().startsWith("en"));
+        if (!vs.length) return null;
+        return vs.sort((a, b) => rankVoice(a) - rankVoice(b))[0];
+      }
+      function speak() {
+        if (!("speechSynthesis" in window)) return;
+        speechSynthesis.cancel();
+        const voice = bestVoice();
+        if (!voice) {
+          $("#sayLab").textContent = T[lang].noVoice;
+          return;
+        }
+        const spans = [...document.querySelectorAll("#phonetic .w")];
+        ttsWords.forEach((w, i) => {
+          const u = new SpeechSynthesisUtterance(w);
+          u.voice = voice;
+          u.lang = voice.lang;
+          u.rate = 0.92;
+          u.pitch = 1;
+          const span = spans[i];
+          if (span && !REDUCE) {
+            u.onstart = () =>
+              gsap.to(span, {
+                color: "#ff7ab8",
+                scale: 1.16,
+                duration: 0.16,
+                transformOrigin: "center",
+              });
+            u.onend = () =>
+              gsap.to(span, { color: "", scale: 1, duration: 0.3 });
+          }
+          speechSynthesis.speak(u);
+        });
+      }
+
+      /* ================= 낱말 ================= */
+      function buildDict() {
+        const t = T[lang],
+          box = $("#dlist");
+        box.textContent = "";
+        $("#dictTitle").textContent = t.dictTitle;
+        t.dict.forEach(([term, def]) => {
+          const d = document.createElement("dl");
+          d.className = "dterm";
+          const dt = document.createElement("dt");
+          dt.textContent = term;
+          const dd = document.createElement("dd");
+          dd.textContent = def;
+          d.append(dt, dd);
+          box.appendChild(d);
+        });
+        if (REDUCE) return;
+        ScrollTrigger.batch(".dterm", {
+          start: "top 92%",
+          onEnter: (els) =>
+            gsap.from(els, {
+              y: 18,
+              opacity: 0,
+              duration: 0.6,
+              stagger: 0.06,
+              ease: "power2.out",
+              overwrite: true,
+            }),
+        });
+      }
+
+      /* ================= 첫 등장 ================= */
+      function intro() {
+        const tl = gsap.timeline();
+        tl.from("#counter", {
+          drawSVG: "50% 50%",
+          duration: 0.85,
+          ease: "power2.inOut",
+        })
+          .from(
+            "#vshape",
+            { drawSVG: "0%", duration: 0.95, ease: "power2.inOut" },
+            "-=.55",
+          )
+          .from("#vshape", { fillOpacity: 0, duration: 0.7 }, "-=.5")
+          .from(
+            "#rim",
+            { drawSVG: "0%", duration: 0.6, ease: "power2.out" },
+            "-=.5",
+          )
+          .from(
+            ["#liq-coffee", "#liq-milk", "#wallLight", "#meniscus"],
+            {
+              scaleY: 0,
+              transformOrigin: "50% 100%",
+              duration: 0.8,
+              ease: "power2.out",
+              svgOrigin: "175 340",
+            },
+            "-=.35",
+          )
+          .from(
+            "#cat",
+            { opacity: 0, y: 16, duration: 0.75, ease: "power2.out" },
+            "-=.7",
+          )
+          .from(
+            "#nap",
+            { opacity: 0, y: 12, duration: 0.75, ease: "power2.out" },
+            "-=.55",
+          )
+          .from("#reflect", { opacity: 0, duration: 0.6 }, "-=.4")
+          .add(() => {
+            firstPaint = false;
+            split = new SplitText("#phrase", {
+              type: "chars",
+              charsClass: "c",
+            });
+            gsap.from(split.chars, {
+              yPercent: 115,
+              opacity: 0,
+              duration: 0.6,
+              stagger: 0.03,
+              ease: "power3.out",
+            });
+          }, "-=.9")
+          .from(
+            ".eyebrow, .say-row, .meaning, .rule",
+            { y: 14, opacity: 0, duration: 0.5, stagger: 0.06 },
+            "-=.7",
+          )
+          .from(
+            ".grp",
+            { y: 16, opacity: 0, duration: 0.5, stagger: 0.055 },
+            "-=.35",
+          )
+          .from(".foot-row", { y: 14, opacity: 0, duration: 0.5 }, "-=.3");
+        return tl;
+      }
+
+      /* ================= 언어 ================= */
+      function applyLang() {
+        const t = T[lang];
+        document.documentElement.lang = lang;
+        $("#lang").textContent = t.lang;
+        $("#eyebrow").textContent = t.eyebrow;
+        $("#sayLab").textContent = t.say;
+        $("#copy").textContent = t.copy;
+        $("#pnote").textContent = t.priceNote;
+        $("#footer").textContent = t.footer;
+        buildControls();
+        buildDict();
+        phraseText = "";
+        render();
+      }
+
+      /* ================= 시작 ================= */
+      applyLang();
+      applyVessel(vesselFor(), true);
+      applyLiquid(true);
+      prevSig = [
+        state.base,
+        state.milk,
+        state.sugar,
+        state.strength,
+        state.dino,
+      ].join("|");
+
+      $("#lang").addEventListener("click", () => {
+        lang = lang === "ko" ? "en" : "ko";
+        applyLang();
+      });
+      $("#say").addEventListener("click", speak);
+      $("#copy").addEventListener("click", async () => {
+        const t = T[lang],
+          btn = $("#copy");
+        try {
+          await navigator.clipboard.writeText(phraseText);
+          btn.textContent = t.copied;
+        } catch {
+          btn.textContent = t.copyFail;
+        }
+        gsap.delayedCall(1.6, () => {
+          btn.textContent = t.copy;
+        });
+      });
+      if ("speechSynthesis" in window)
+        speechSynthesis.onvoiceschanged = () => {};
+
+      if (REDUCE) {
+        firstPaint = false;
+      } else {
+        intro();
+        idle();
+        trackEyes();
+      }
+    </script>
+  </body>
+</html>

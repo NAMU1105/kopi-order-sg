@@ -1,0 +1,18 @@
+{
+  "name": "kopi-order",
+  "version": "1.0.0",
+  "private": true,
+  "description": "싱가포르 코피 주문기. Build a Singapore kopitiam coffee order, one tap at a time.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "login": "wrangler login",
+    "vendor": "cp node_modules/gsap/dist/{gsap,CustomEase,CustomBounce,CustomWiggle,Flip,MorphSVGPlugin,SplitText,DrawSVGPlugin,Physics2DPlugin,MotionPathPlugin,ScrollTrigger}.min.js public/vendor/",
+    "test": "node test/smoke.js"
+  },
+  "devDependencies": {
+    "gsap": "^3.15",
+    "playwright": "^1.56.0",
+    "wrangler": "^4"
+  }
+}

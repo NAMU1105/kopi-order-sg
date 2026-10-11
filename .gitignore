@@ -1,0 +1,60 @@
+# 의존성
+# Dependencies
+node_modules/
+
+# wrangler 로컬 상태 (dev 서버 캐시, 빌드 산출물)
+# wrangler local state (dev server cache, build output)
+.wrangler/
+
+# wrangler 로컬 환경변수. 비밀값이 들어가므로 절대 커밋하지 않습니다
+# Local secrets for wrangler. Never commit these.
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+
+# Playwright 산출물. npm test 는 결과 파일을 남기지 않지만,
+# 나중에 @playwright/test 로 옮기면 이 둘이 생깁니다
+# Playwright output. `npm test` writes none today, but switching to
+# @playwright/test would start producing these.
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# 로그
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# 에디터 · OS
+# Editors and OS cruft
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+
+# ─────────────────────────────────────────────────────────────
+# 일부러 커밋하는 것들 (무시하면 안 됩니다)
+# Deliberately committed — do NOT add these to this file
+#
+# public/vendor/*.min.js
+#   npm run vendor 로 node_modules 에서 복사해 오는 GSAP 파일입니다.
+#   생성물이지만 반드시 커밋해야 합니다. 배포는 public/ 폴더를 그대로 올리기 때문에,
+#   이게 없으면 새로 클론한 사람이 배포했을 때 GSAP 없는 깨진 앱이 올라갑니다.
+#
+#   GSAP files copied out of node_modules by `npm run vendor`. They are
+#   generated, but they must be committed: deploying uploads public/ as-is,
+#   so without them a fresh clone would deploy an app with no GSAP at all.
+#
+# public/og.png, public/demo.gif
+#   스크립트로 만든 이미지지만 배포본이 실제로 서빙하고 README가 참조합니다.
+#   Script-generated images, but the deployed site serves og.png and the
+#   README embeds demo.gif.
+#
+# package-lock.json
+#   버전을 고정해야 다른 환경에서도 같은 결과가 나옵니다.
+#   Pins versions so installs are reproducible elsewhere.
+# ─────────────────────────────────────────────────────────────

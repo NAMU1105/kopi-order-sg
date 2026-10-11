@@ -1,0 +1,19 @@
+{
+  // Cloudflare Workers 설정. 정적 파일만 있는 프로젝트라 main(워커 코드)은 없습니다.
+  // 나중에 API가 필요해지면 "main": "src/index.ts" 한 줄 추가하고 시작하면 돼요.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kopi-order",
+
+  // 런타임 동작 기준일. 배포하는 날짜로 두면 됩니다.
+  "compatibility_date": "2026-09-07",
+
+  "assets": {
+    // 이 폴더 안의 파일이 그대로 서빙됩니다. index.html이 루트가 돼요.
+    "directory": "./public",
+    // 없는 경로는 404 페이지 없이 404만. SPA가 아니라서 이게 맞습니다.
+    "not_found_handling": "none"
+  },
+
+  // 대시보드에서 배포 이력을 보려면 켜두는 게 좋아요.
+  "observability": { "enabled": true }
+}
